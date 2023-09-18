@@ -1,6 +1,5 @@
 import datetime
 import os
-import time
 from urllib.parse import quote
 from urllib.request import urlretrieve
 from dataclasses import dataclass
@@ -14,6 +13,8 @@ load_dotenv()
 SCHEDULE_URL: str = os.getenv('SCHEDULE_URL')
 HE_URL: str = os.getenv('HE_URL')
 GROUP_NAME: str = os.getenv('GROUP_NAME')
+WEBSITE_DATE_FORMAT: str = '%d.%m.%y %H:%M'
+UPDATE_DATE_FILENAME: str = 'last_update_date.txt'
 
 
 @dataclass
@@ -29,9 +30,6 @@ class Schedule:
     weight: str
     date: datetime.datetime
     url: str
-
-    def date_as_string(self):
-        return datetime.datetime.strftime(self.date, '%y%m%d')
 
 
 def process_excel_file(filename, group_name=GROUP_NAME) -> list[dict]:
@@ -124,8 +122,19 @@ def get_data() -> tuple:
                 i.find_all('td')
             )
             url = HE_URL + quote(i.td.a.get('href'))
-            date = datetime.datetime.strptime(date, '%d.%m.%y %H:%M')
+            date = datetime.datetime.strptime(date, WEBSITE_DATE_FORMAT)
+            save_last_date_update(date)
     return Schedule(name, weight, date, url)
+
+
+def save_last_date_update(date: str):
+    with open(UPDATE_DATE_FILENAME, 'w') as file:
+        file.write(datetime.datetime.strftime(date, WEBSITE_DATE_FORMAT))
+
+
+def get_last_date_update():
+    with open(UPDATE_DATE_FILENAME, 'r') as file:
+        return file.readline()
 
 
 def parse_schedule(matrix) -> dict:
@@ -194,10 +203,8 @@ def get_file() -> list[dict]:
     or raises FileNotFoundError.
     """
     current_directory = os.getcwd()
-    print(current_directory)
     for file in os.listdir(current_directory):
         if file.endswith('.xlsx'):
-            print(file)
             return process_excel_file(file)
 
 
@@ -207,25 +214,3 @@ def clear_xlsx_files() -> None:
     for file in os.listdir(current_directory):
         if file.endswith('.xlsx'):
             os.remove(file)
-
-
-def start_monitoring():
-    last_update_date = datetime.datetime.now().replace(microsecond=0)
-    while True:
-        print(f'last update at: {last_update_date}')
-        schedule: Schedule = get_data()
-        print(f'current schedule upload date: {schedule.date}')
-        if is_schedule_updated(schedule, last_update_date):
-            clear_xlsx_files()
-            print('dates differ, downloading file')
-            last_update_date = schedule.date
-            file = download_file(schedule.url, schedule.date)
-            print(f'downloaded {file[0]}')
-        else:
-            print('nothing changed')
-        print('sleeping\n\n')
-        time.sleep(10)
-
-
-if __name__ == '__main__':
-    clear_xlsx_files()
