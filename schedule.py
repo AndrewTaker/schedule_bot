@@ -127,12 +127,19 @@ def get_data() -> tuple:
     return Schedule(name, weight, date, url)
 
 
-def save_last_date_update(date: str):
+def save_last_date_update(date: str) -> None:
+    """
+    Saves last schedule update date to .txt file.
+    """
     with open(UPDATE_DATE_FILENAME, 'w') as file:
         file.write(datetime.datetime.strftime(date, WEBSITE_DATE_FORMAT))
 
 
-def get_last_date_update():
+def get_last_date_update() -> str:
+    """
+    Gets last schedule update date from .txt file.
+    Returns the date as a string.
+    """
     with open(UPDATE_DATE_FILENAME, 'r') as file:
         return file.readline()
 
@@ -178,7 +185,7 @@ def schedule_prettify(schedule: dict) -> str:
         f'{schedule["day"]}</strong>📆' + '\n\n'
     )
     # Forced to specify last index.
-    # Formatting doesn't work the last day of the week without it.
+    # Formatting doesn't work for the last day of the week without it.
     for k, v in list(schedule.items())[2:-1]:
         string += f'⌛️<strong>{k}</strong>' + '\n'
         string += f'<i>{v}</i>' + '\n\n'
@@ -199,8 +206,7 @@ def is_schedule_updated(
 def get_file() -> list[dict]:
     """
     Opens local .xlsx file for processing.
-    Returns a list of parsed schedule dictionaries
-    or raises FileNotFoundError.
+    Returns a list of parsed schedule dictionaries.
     """
     current_directory = os.getcwd()
     for file in os.listdir(current_directory):

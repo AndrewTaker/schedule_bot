@@ -1,4 +1,7 @@
 import datetime
+import requests
+import os
+from schedule import SCHEDULE_URL
 
 
 def get_tomorrow() -> str:
@@ -24,3 +27,20 @@ def as_datetime(string_date) -> datetime.datetime:
     Returns string date as a datetime object.
     """
     return datetime.datetime.strptime(string_date, '%d.%m.%y')
+
+
+def get_website_status_code() -> int:
+    """
+    Get website's status code. Returns int.
+    """
+    return requests.get(SCHEDULE_URL).status_code
+
+
+def get_list_of_xlsx_files() -> list:
+    """
+    Returns a list of .xlsx files in the root directory.
+    """
+    return [
+        file for file in os.listdir(os.getcwd())
+        if file.endswith('.xlsx')
+    ]
