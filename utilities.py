@@ -3,6 +3,8 @@ import requests
 import os
 from schedule import SCHEDULE_URL
 
+DATETIME_FORMAT: str = '%d.%m.%y'
+
 
 def get_tomorrow() -> str:
     """
@@ -10,7 +12,7 @@ def get_tomorrow() -> str:
     """
     datetime_today: datetime.datetime = datetime.datetime.now().date()
     tomorrow: datetime.datetime = datetime_today + datetime.timedelta(1)
-    return tomorrow.strftime('%d.%m.%y')
+    return tomorrow.strftime(DATETIME_FORMAT)
 
 
 def get_week() -> int:
@@ -26,7 +28,7 @@ def as_datetime(string_date) -> datetime.datetime:
     """
     Returns string date as a datetime object.
     """
-    return datetime.datetime.strptime(string_date, '%d.%m.%y')
+    return datetime.datetime.strptime(string_date, DATETIME_FORMAT)
 
 
 def get_website_status_code() -> int:
