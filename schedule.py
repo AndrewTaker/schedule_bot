@@ -1,5 +1,6 @@
 import datetime
 import os
+from babel.dates import format_datetime
 from urllib.parse import quote
 from urllib.request import urlretrieve
 from dataclasses import dataclass
@@ -8,6 +9,7 @@ import openpyxl
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from date_ranges import LETTERS_PER_MONTH
 
 load_dotenv()
 SCHEDULE_URL: str = os.getenv('SCHEDULE_URL')
@@ -15,6 +17,7 @@ HE_URL: str = os.getenv('HE_URL')
 GROUP_NAME: str = os.getenv('GROUP_NAME')
 WEBSITE_DATE_FORMAT: str = '%d.%m.%y %H:%M'
 UPDATE_DATE_FILENAME: str = 'last_update_date.txt'
+CURRENT_MONTH: str = format_datetime(format='LLLL', locale='ru_RU')
 
 
 @dataclass
@@ -74,14 +77,9 @@ def create_ranges() -> list[list[str]]:
     Creates a list of lists with ranges.
     Every list equals to a single week.
     """
-    letters = [
-        ['B', 'C'],
-        ['D', 'E'],
-        ['F', 'G'],
-        ['H', 'I'],
-        ['J', 'K'],
+    return [
+        create_single_range(row) for row in LETTERS_PER_MONTH[CURRENT_MONTH]
     ]
-    return [create_single_range(row) for row in letters]
 
 
 def make_matrix(range: str, worksheet: openpyxl.Workbook) -> list[list[str]]:
@@ -99,11 +97,11 @@ def download_file(url, date) -> tuple:
     Downloads schedule as an .xlsx.
     Returns a tuple with a filepath and HTTPMessage.
     """
-    filename = f"{datetime.datetime.strftime(date, '%y%m%d')}.xlsx"
+    filename = f"{datetime.datetime.strftime(date, '%d_%m_%y')}.xlsx"
     return urlretrieve(url, filename)
 
 
-def get_data() -> tuple:
+def get_data() -> Schedule:
     """
     Parses all the data from schedule page.
     Returns a Schedule class instance.
@@ -111,11 +109,13 @@ def get_data() -> tuple:
     response = requests.get(SCHEDULE_URL)
     soup = BeautifulSoup(response.text, 'html.parser')
     table = soup.find('table').tbody.find_all('tr')
+    lookup = f'икиип бакалавриат {CURRENT_MONTH.lower()}'
 
     for i in table:
+        context = i.td.a
         if (
-            i.td.a and
-            'икиип бакалавриат' in i.td.a.get_text(strip=True).lower()
+            context and
+            lookup in context.get_text(strip=True).lower()
         ):
             name, weight, date = map(
                 lambda x: x.get_text(strip=True),
