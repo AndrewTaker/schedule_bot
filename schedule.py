@@ -92,7 +92,7 @@ def make_matrix(range: str, worksheet: openpyxl.Workbook) -> list[list[str]]:
     return matrix
 
 
-def download_file(url, date) -> tuple:
+def download_file(url: str, date: datetime.datetime) -> tuple:
     """
     Downloads schedule as an .xlsx.
     Returns a tuple with a filepath and HTTPMessage.
@@ -124,6 +124,8 @@ def get_data() -> Schedule:
             url = HE_URL + quote(i.td.a.get('href'))
             date = datetime.datetime.strptime(date, WEBSITE_DATE_FORMAT)
             save_last_date_update(date)
+            clear_xlsx_files()
+            download_file(url, date)
     return Schedule(name, weight, date, url)
 
 

@@ -32,6 +32,7 @@ async def today(
     context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     """Today's schedule."""
+    get_data()
     schedule = get_file()
     today = datetime.datetime.strftime(
         datetime.datetime.today().date(), '%d.%m.%y'
@@ -53,6 +54,7 @@ async def tomorrow(
     context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     """Tomorrow's schedule."""
+    get_data()
     schedule = get_file()
     tomorrow = get_tomorrow()
     result = 'Ничего не нашёл. Скорее всего, завтра воскресенье'
@@ -72,6 +74,7 @@ async def week(
     context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     """This week's schedule."""
+    get_data()
     schedule = get_file()
     current_week = get_week()
     result = ''
@@ -92,6 +95,7 @@ async def next_week(
     context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     """Next week's schedule."""
+    get_data()
     schedule = get_file()
     next_week = get_week() + 1
     result = ''
